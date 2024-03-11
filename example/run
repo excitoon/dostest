@@ -52,7 +52,7 @@ with testbox.TestBox(configuration, test_command, environment) as box:
         ('five', '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴▸▾▾◂◂▾◂◂▾▾◂◂▾▸▸▸▸▸▸▸▸▸▸▸▸▸▸▸◂'),
         ('six', '◂◂◂◂◂◂◂▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸'),
     ):
-        # Skipping status bar.
+        # Checkpoint, skipping status bar.
         image = box.wait_image(f'images/step-{step}.png', (0, 0, 320, 191), timeout=2)
 
         for key in keys:
@@ -60,4 +60,4 @@ with testbox.TestBox(configuration, test_command, environment) as box:
             # Waiting move counter to update.
             image = box.wait_change(image, (75, 191, 110, 200), timeout=1)
 
-    box.wait_image('images/win.png', timeout=10)
+    box.wait_image('images/win.png', timeout=10) # Level 2.
