@@ -20,7 +20,7 @@ configuration = {
 environment = os.environ.copy()
 environment['SDL_AUDIODRIVER'] = ''
 
-with testbox.TestBox(configuration, test_command, environment) as box:
+with testbox.TestBox(test_command, configuration, environment) as box:
     box.wait_image('images/graphics.png', timeout=1)
     box.send_keys('C\r') # CGA mode.
 
@@ -60,4 +60,4 @@ with testbox.TestBox(configuration, test_command, environment) as box:
             # Waiting move counter to update.
             image = box.wait_change(image, (75, 191, 110, 200), timeout=1)
 
-    box.wait_image('images/win.png', timeout=10) # Level 2.
+    box.wait_image('images/victory.png', timeout=10) # Level 2.

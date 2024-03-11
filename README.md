@@ -17,7 +17,7 @@ Test scenario includes full walkthrough of level 1.
 ```python
 import testbox
 
-with testbox.TestBox({'cpu': {'cycles': 'max'}}, ['SOKOBAN.EXE']) as box:
+with testbox.TestBox(['SOKOBAN.EXE'], {'cpu': {'cycles': 'max'}}) as box:
     box.wait_image('images/graphics.png', timeout=1)
     box.send_keys('C\r') # CGA mode.
 
@@ -55,7 +55,7 @@ with testbox.TestBox({'cpu': {'cycles': 'max'}}, ['SOKOBAN.EXE']) as box:
             # Waiting move counter to update.
             image = box.wait_change(image, (75, 191, 110, 200), timeout=1)
 
-    box.wait_image('images/win.png', timeout=10) # Level 2.
+    box.wait_image('images/victory.png', timeout=10) # Level 2.
 ```
 
 ![Test application](example/video.gif)

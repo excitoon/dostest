@@ -12,9 +12,9 @@ assert multiprocessing.get_start_method() == 'fork'
 
 
 class TestBox:
-    def __init__(self, configuration, test_command, environment=None):
+    def __init__(self, test_command, configuration=None, environment=None):
         self.__captures_path = None
-        self.__configuration = {section: items.copy() for section, items in configuration.items()}
+        self.__configuration = {section: items.copy() for section, items in configuration.items()} if configuration is not None else {}
         self.__configuration.setdefault('sdl', {})['usescancodes'] = 'false'
         self.__directory = None
         self.__environment = environment if environment is not None else os.environ.copy()
