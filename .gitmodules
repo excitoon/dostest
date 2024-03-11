@@ -1,0 +1,3 @@
+[submodule "dosbox"]
+	path = dosbox
+	url = ../dosbox

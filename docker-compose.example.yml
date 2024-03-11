@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  testbox:
+    build: .
+    image: testbox
+    pull_policy: build
+
+  test:
+    build:
+      dockerfile: Dockerfile.example
+    environment:
+    - DISPLAY
+    volumes:
+    - "/tmp/.X11-unix:/tmp/.X11-unix"
+    depends_on:
+    - testbox
