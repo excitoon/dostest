@@ -8,7 +8,7 @@ with open(f'{os.path.dirname(os.path.abspath(__file__))}/requirements.txt') as r
     with open(f'{os.path.dirname(os.path.abspath(__file__))}/README.md') as readme:
         setuptools.setup(
             name='testbox',
-            version='0.0.1',
+            version='0.0.2',
             description='Test/TAS framework for DOSBox',
             long_description=readme.read(),
             long_description_content_type='text/markdown',

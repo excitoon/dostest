@@ -67,7 +67,23 @@ class TestBox:
             os.remove(path)
             diff = PIL.ImageChops.difference(actual, expected).getbbox()
             if diff is None or (diff[2]-diff[0])*(diff[3]-diff[1]) <= max_diff_area:
-                return
+                return actual
+
+    def wait_change(self, image, bbox, timeout=None):
+        expected = image.crop(bbox)
+        t = None
+        while True:
+            if t is not None:
+                timeout = self.__subtract_timeout(timeout, time.monotonic() - t)
+            t = time.monotonic()
+
+            path = self.get_screenshot(timeout=timeout)
+            result = PIL.Image.open(path)
+            os.remove(path)
+            actual = result.crop(bbox)
+            diff = PIL.ImageChops.difference(actual, expected).getbbox()
+            if diff is not None:
+                return result
 
     def quit(self):
         self.__command('BYE')
