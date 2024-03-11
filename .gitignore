@@ -1,2 +1,3 @@
 /dist/
 /testbox.egg-info/
+__pycache__/

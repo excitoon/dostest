@@ -8,7 +8,7 @@ services:
 
   test:
     build:
-      dockerfile: Dockerfile.example
+      dockerfile: example/Dockerfile
     environment:
     - DISPLAY
     volumes:

@@ -1,12 +1,11 @@
 FROM testbox
 
 WORKDIR /app
-COPY run .
+COPY example/run .
 ENV PATH /app:${PATH}
 
 WORKDIR /test
 COPY example/application .
 COPY example/images images
-COPY example/dosbox.conf /tmp
 
-CMD run images /tmp/captures /tmp/dosbox.conf SOKOBAN.EXE
+CMD run

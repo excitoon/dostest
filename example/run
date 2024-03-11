@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+import os
+import time
+
+import testbox
+
+
+test_command = ['SOKOBAN.EXE']
+
+configuration = {
+    'sdl': {'autolock': 'false'},
+    'cpu': {'cycles': 'max'},
+    'render': {'scaler': 'normal5x'},
+    'mixer': {'nosound': 'true'},
+    'midi': {'mididevice': 'none'},
+    'sblaster': {'sbtype': 'none'},
+    'speaker': {'pcspeaker': 'false'},
+}
+
+environment = os.environ.copy()
+environment['SDL_AUDIODRIVER'] = ''
+
+with testbox.TestBox(configuration, test_command, environment) as box:
+    box.wait_image('images/graphics.png', timeout=1)
+    box.send_keys('C\r') # CGA mode.
+
+    box.wait_image('images/input.png', timeout=1)
+    box.send_keys('K\r') # Input from keyboard.
+
+    box.wait_image('images/door.png', timeout=5)
+    box.send_keys('\r') # Enter door.
+
+    box.wait_image('images/lobby.png', timeout=1)
+    box.send_keys('\r') # Enter elevator.
+
+    box.wait_image('images/menu.png', timeout=5)
+    box.send_keys('TEST\r') # Enter player name.
+
+    time.sleep(0.05) # We can't press Enter too often.
+    box.send_keys('\r') # Select single player mode.
+
+    box.wait_image('images/elevator.png', timeout=1)
+    box.send_keys('1A') # Select first floor and accept.
+
+    box.wait_image('images/level.png', timeout=2)
+    # TODO make auto solver
+    # TODO there is more optimal route for level 1
+    for i, keys in enumerate((
+        '▴◂◂◂▴▴▴◂ ▴ ◂◂▾ ◂◂▾▾▾▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▾▸▴ ◂◂',
+        '◂◂◂◂◂◂◂◂◂◂◂◂▴◂◂▾▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▴▸▾ ◂▾▸ ▴◂',
+        '◂◂◂◂◂◂◂▴▴▴◂▴◂◂▾▾ ▾ ▴▴◂◂▾▾▾▸▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ◂',
+        '◂◂◂◂◂◂◂▴▴▴◂◂ ▴◂▾ ▾ ▾ ▴▴◂◂▾▾▾▸▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▾▸▴ ◂',
+        '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴◂▾ ▾ ▾ ▾ ▾ ▴▴◂◂▾▾▾▸▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▴▸▾ ◂▾▸ ▴',
+        '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴▸▾ ▾ ◂◂▾▾▾▾▸▸▸▴▴▴◂ ◂ ▴◂▾ ▾ ▾ ▴▴◂◂▾▾▾▸▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸',
+    )):
+        for key in keys:
+            if key != ' ':
+                box.send_keys(key)
+                time.sleep(0.25)
+            else:
+                time.sleep(0.2)
+
+        if i < 5:
+            step = ('one', 'two', 'three', 'four', 'five')[i]
+            box.wait_image(f'images/step-{step}.png', max_diff_area=450, timeout=1)
+
+    box.wait_image('images/win.png', timeout=10)
