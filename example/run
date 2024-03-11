@@ -44,6 +44,7 @@ with testbox.TestBox(test_command, configuration, environment) as box:
 
     # TODO make auto solver
     # TODO probably there is more optimal route
+    # TODO take into consideration that vertical pushes are faster (!)
     for step, keys in (
         ('one', '▴◂◂◂▴▴▴◂▴◂◂▾◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▸▾▸▴◂◂'),
         ('two', '◂◂◂◂◂◂◂▴▴▴◂▴◂◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▴▸▾◂▾▸▴◂'),
