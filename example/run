@@ -37,7 +37,7 @@ with testbox.TestBox(configuration, test_command, environment) as box:
     box.wait_image('images/menu.png', timeout=5)
     box.send_keys('TEST\r') # Enter player name.
 
-    time.sleep(0.05) # We can't press Enter too often.
+    box.wait_image('images/start.png', timeout=1)
     box.send_keys('\r') # Select single player mode.
 
     box.wait_image('images/elevator.png', timeout=1)
@@ -46,6 +46,7 @@ with testbox.TestBox(configuration, test_command, environment) as box:
     box.wait_image('images/level.png', timeout=2)
     # TODO make auto solver
     # TODO there is more optimal route for level 1
+    # TODO find coordinates and eliminate sleeping after moves by looking at moves counter
     for i, keys in enumerate((
         '▴◂◂◂▴▴▴◂ ▴ ◂◂▾ ◂◂▾▾▾▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▾▸▴ ◂◂',
         '◂◂◂◂◂◂◂◂◂◂◂◂▴◂◂▾▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▸ ▴▸▾ ◂▾▸ ▴◂',
