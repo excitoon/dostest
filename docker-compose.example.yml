@@ -13,5 +13,6 @@ services:
     - DISPLAY
     volumes:
     - "/tmp/.X11-unix:/tmp/.X11-unix"
+    - "/dev/snd:/dev/snd"
     depends_on:
     - testbox

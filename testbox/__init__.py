@@ -12,11 +12,12 @@ assert multiprocessing.get_start_method() == 'fork'
 
 
 class TestBox:
-    def __init__(self, test_command, configuration=None, environment=None):
+    def __init__(self, test_command, configuration=None, environment=None, dosbox_path='dosbox'):
         self.__captures_path = None
         self.__configuration = {section: items.copy() for section, items in configuration.items()} if configuration is not None else {}
         self.__configuration.setdefault('sdl', {})['usescancodes'] = 'false'
         self.__directory = None
+        self.__dosbox_path = dosbox_path
         self.__environment = environment if environment is not None else os.environ.copy()
         self.__input_file = None
         self.__output_in = None
@@ -53,8 +54,8 @@ class TestBox:
         name, = os.listdir(self.__captures_path)
         return os.path.join(self.__captures_path, name)
 
-    def wait_image(self, expected_path, bbox=None, timeout=None):
-        expected_image = PIL.Image.open(expected_path)
+    def wait_image(self, image, bbox=None, invert=False, timeout=None):
+        expected_image = PIL.Image.open(image) if isinstance(image, str) else image
         expected = expected_image.crop(bbox) if bbox else expected_image
         t = None
         while True:
@@ -68,24 +69,11 @@ class TestBox:
             os.remove(path)
             actual = result.crop(bbox) if bbox else result
             diff = PIL.ImageChops.difference(actual, expected).getbbox()
-            if diff is None:
+            if (diff is None) != invert:
                 return result
 
     def wait_change(self, image, bbox=None, timeout=None):
-        expected = image.crop(bbox) if bbox else image
-        t = None
-        while True:
-            if t is not None:
-                timeout = self.__subtract_timeout(timeout, time.monotonic() - t)
-            t = time.monotonic()
-
-            path = self.get_screenshot(timeout=timeout)
-            result = PIL.Image.open(path)
-            os.remove(path)
-            actual = result.crop(bbox) if bbox else result
-            diff = PIL.ImageChops.difference(actual, expected).getbbox()
-            if diff is not None:
-                return result
+        return self.wait_image(image, bbox=bbox, invert=True, timeout=timeout)
 
     def quit(self):
         self.__command('BYE')
@@ -134,7 +122,7 @@ class TestBox:
             os.close(self.__output_in),
             os.dup2(output_out, 1),
             os.close(output_out),
-            os.execlpe('stdbuf', 'stdbuf', '-oL', 'dosbox', '-conf', configuration_path, *self.__test_command, self.__environment),
+            os.execlpe('stdbuf', 'stdbuf', '-oL', self.__dosbox_path, '-conf', configuration_path, *self.__test_command, self.__environment),
         ))
 
         self.__process.start()

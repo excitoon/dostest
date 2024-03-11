@@ -8,19 +8,12 @@ import testbox
 test_command = ['SOKOBAN.EXE']
 
 configuration = {
-    'sdl': {'autolock': 'false'},
+    'sdl': {'autolock': 'false', 'nocontrols': 'true'},
     'cpu': {'cycles': 'max'},
     'render': {'scaler': 'normal5x'},
-    'mixer': {'nosound': 'true'},
-    'midi': {'mididevice': 'none'},
-    'sblaster': {'sbtype': 'none'},
-    'speaker': {'pcspeaker': 'false'},
 }
 
-environment = os.environ.copy()
-environment['SDL_AUDIODRIVER'] = ''
-
-with testbox.TestBox(test_command, configuration, environment) as box:
+with testbox.TestBox(test_command, configuration) as box:
     box.wait_image('images/graphics.png', timeout=1)
     box.send_keys('C\r') # CGA mode.
 
