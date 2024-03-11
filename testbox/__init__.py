@@ -53,8 +53,9 @@ class TestBox:
         name, = os.listdir(self.__captures_path)
         return os.path.join(self.__captures_path, name)
 
-    def wait_image(self, expected_path, max_diff_area=0, timeout=None):
-        expected = PIL.Image.open(expected_path)
+    def wait_image(self, expected_path, bbox=None, timeout=None):
+        expected_image = PIL.Image.open(expected_path)
+        expected = expected_image.crop(bbox) if bbox else expected_image
         t = None
         while True:
             if t is not None:
@@ -63,14 +64,15 @@ class TestBox:
 
             path = self.get_screenshot(timeout=timeout)
 
-            actual = PIL.Image.open(path)
+            result = PIL.Image.open(path)
             os.remove(path)
+            actual = result.crop(bbox) if bbox else result
             diff = PIL.ImageChops.difference(actual, expected).getbbox()
-            if diff is None or (diff[2]-diff[0])*(diff[3]-diff[1]) <= max_diff_area:
-                return actual
+            if diff is None:
+                return result
 
-    def wait_change(self, image, bbox, timeout=None):
-        expected = image.crop(bbox)
+    def wait_change(self, image, bbox=None, timeout=None):
+        expected = image.crop(bbox) if bbox else image
         t = None
         while True:
             if t is not None:
@@ -80,7 +82,7 @@ class TestBox:
             path = self.get_screenshot(timeout=timeout)
             result = PIL.Image.open(path)
             os.remove(path)
-            actual = result.crop(bbox)
+            actual = result.crop(bbox) if bbox else result
             diff = PIL.ImageChops.difference(actual, expected).getbbox()
             if diff is not None:
                 return result

@@ -42,23 +42,22 @@ with testbox.TestBox(configuration, test_command, environment) as box:
     box.wait_image('images/elevator.png', timeout=1)
     box.send_keys('1A') # Select first floor and accept.
 
-    image = box.wait_image('images/level.png', timeout=2)
     # TODO make auto solver
-    # TODO there is more optimal route for level 1
-    for i, keys in enumerate((
-        '▴◂◂◂▴▴▴◂▴◂◂▾◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▸▾▸▴◂◂',
-        '◂◂◂◂◂◂◂◂◂◂◂◂▴◂◂▾▸▸▸▸▸▸▸▸▸▸▸▸▸▸▴▸▾◂▾▸▴◂',
-        '◂◂◂◂◂◂◂▴▴▴◂▴◂◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▸◂',
-        '◂◂◂◂◂◂◂▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▾▸▴◂',
-        '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴◂▾▾▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▴▸▾◂▾▸▴',
-        '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴▸▾▾◂◂▾▾▾▾▸▸▸▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸',
-    )):
+    # TODO probably there is more optimal route
+    for step, keys in (
+        ('one', '▴◂◂◂▴▴▴◂▴◂◂▾◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▸▾▸▴◂◂'),
+        ('two', '◂◂◂◂◂◂◂▴▴▴◂▴◂◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▴▸▾◂▾▸▴◂'),
+        ('three', '◂◂◂◂◂◂◂▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸▾▸▴◂'),
+        ('four', '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴◂▾▾▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▴▸▾◂▾▸▴'),
+        ('five', '◂◂◂◂◂◂◂▴▴▴◂◂▴▴▴▸▾▾◂◂▾◂◂▾▾◂◂▾▸▸▸▸▸▸▸▸▸▸▸▸▸▸▸◂'),
+        ('six', '◂◂◂◂◂◂◂▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸'),
+    ):
+        # Skipping status bar.
+        image = box.wait_image(f'images/step-{step}.png', (0, 0, 320, 191), timeout=2)
+
         for key in keys:
             box.send_keys(key)
+            # Waiting move counter to update.
             image = box.wait_change(image, (75, 191, 110, 200), timeout=1)
-
-        if i < 5:
-            step = ('one', 'two', 'three', 'four', 'five')[i]
-            image = box.wait_image(f'images/step-{step}.png', max_diff_area=450, timeout=1)
 
     box.wait_image('images/win.png', timeout=10)
