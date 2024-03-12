@@ -2,8 +2,16 @@
 
 Test/TAS framework for DOSBox.
 
+Run:
+
 ```
 docker-compose -f docker-compose.example.yml run test
+```
+
+Or:
+
+```
+docker-compose -f docker-compose.example.console.yml run test
 ```
 
 Tested on Ubuntu 20.10.
@@ -48,12 +56,12 @@ with testbox.TestBox(['SOKOBAN.EXE'], {'cpu': {'cycles': 'max'}}) as box:
         ('six', '◂◂◂◂◂◂◂▴▴▴◂◂▴◂▾▾▾▴▴◂◂▾▾▾▸▸▸▸▸▸▸▸▸▸▸▸'),
     ):
         # Checkpoint, skipping status bar.
-        image = box.wait_image(f'images/step-{step}.png', (0, 0, 320, 191), timeout=2)
+        box.wait_image(f'images/step-{step}.png', bbox=(0, 0, 320, 191), timeout=3)
 
         for key in keys:
             box.send_keys(key)
             # Waiting move counter to update.
-            image = box.wait_change(image, (75, 191, 110, 200), timeout=1)
+            box.wait_change(bbox=(75, 191, 110, 200), timeout=1)
 
     box.wait_image('images/victory.png', timeout=10) # Level 2.
 ```

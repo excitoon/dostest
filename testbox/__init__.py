@@ -1,3 +1,4 @@
+import contextlib
 import multiprocessing
 import os
 import tempfile
@@ -13,6 +14,7 @@ assert multiprocessing.get_start_method() == 'fork'
 
 class TestBox:
     def __init__(self, test_command, configuration=None, environment=None, dosbox_path='dosbox'):
+        # TODO Try rewrite as contextmanager
         self.__captures_path = None
         self.__configuration = {section: items.copy() for section, items in configuration.items()} if configuration is not None else {}
         self.__configuration.setdefault('sdl', {})['usescancodes'] = 'false'
@@ -47,45 +49,58 @@ class TestBox:
                 self.__command('KEY UP 304 0')
 
     def get_screenshot(self, timeout=None):
-        print('SCREENSHOT', file=self.__input_file, flush=True)
-        if not self.__screenshot_ready.wait(timeout=timeout):
-            raise TimeoutError()
-        self.__screenshot_ready.clear()
-        name, = os.listdir(self.__captures_path)
-        return os.path.join(self.__captures_path, name)
-
-    def wait_image(self, image, bbox=None, invert=False, timeout=None):
-        expected_image = PIL.Image.open(image) if isinstance(image, str) else image
-        expected = expected_image.crop(bbox) if bbox else expected_image
-        t = None
-        while True:
-            if t is not None:
-                timeout = self.__subtract_timeout(timeout, time.monotonic() - t)
-            t = time.monotonic()
-
-            path = self.get_screenshot(timeout=timeout)
-
+        with self.__timeout(timeout) as timeout:
+            print('SCREENSHOT', file=self.__input_file, flush=True)
+            if not self.__screenshot_ready.wait(timeout=timeout()):
+                raise TimeoutError()
+            self.__screenshot_ready.clear()
+            name, = (x for x in os.listdir(self.__captures_path) if os.path.splitext(x)[1] == '.png')
+            path = os.path.join(self.__captures_path, name)
             result = PIL.Image.open(path)
             os.remove(path)
-            actual = result.crop(bbox) if bbox else result
-            diff = PIL.ImageChops.difference(actual, expected).getbbox()
-            if (diff is None) != invert:
-                return result
+            return result
 
-    def wait_change(self, image, bbox=None, timeout=None):
+    def wait_image(self, image=None, bbox=None, invert=False, timeout=None):
+        with self.__timeout(timeout) as timeout:
+            if image is None:
+                expected_image = self.get_screenshot(timeout=timeout())
+            elif isinstance(image, str):
+                expected_image = PIL.Image.open(image)
+            else:
+                expected_image = image
+
+            expected = expected_image.crop(bbox) if bbox else expected_image
+            while True:
+                result = self.get_screenshot(timeout=timeout())
+                actual = result.crop(bbox) if bbox else result
+                diff = PIL.ImageChops.difference(actual, expected).getbbox()
+                if (diff is None) != invert:
+                    return result
+
+    def wait_change(self, image=None, bbox=None, timeout=None):
         return self.wait_image(image, bbox=bbox, invert=True, timeout=timeout)
 
     def quit(self):
         self.__command('BYE')
 
+    @property
+    def pid(self):
+        return self.__process.pid
+
     @staticmethod
-    def __subtract_timeout(timeout, seconds):
-        if timeout is None:
-            return None
-        elif timeout < seconds:
-            raise TimeoutError()
-        else:
-            return timeout - seconds
+    @contextlib.contextmanager
+    def __timeout(timeout):
+        now = time.monotonic()
+        def get():
+            nonlocal now
+            nonlocal timeout
+            if timeout is not None:
+                passed = time.monotonic() - now
+                now += passed
+                timeout -= passed
+            return timeout
+        yield get
+        get()
 
     def __output_thread(self):
         with os.fdopen(self.__output_in) as output_file:
@@ -137,12 +152,10 @@ class TestBox:
         self.__input_file = os.fdopen(input_out, 'w')
 
         time.sleep(1.5) # FIXME DOSBox fails to save screenshots when its loading
-
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.__directory.__exit__(exc_type, exc_value, traceback)
-        self.quit()
         self.__input_file.close()
-        self.__process.join()
+        self.__process.kill()
         self.__thread.join()

@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  testbox:
+    build: .
+    image: testbox
+    pull_policy: build
+
+  test:
+    build:
+      dockerfile: example/Dockerfile
+    environment:
+    - SDL_VIDEODRIVER=dummy
+    - SDL_AUDIODRIVER=dummy
+    depends_on:
+    - testbox
