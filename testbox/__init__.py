@@ -13,7 +13,7 @@ assert multiprocessing.get_start_method() == 'fork'
 
 
 class TestBox:
-    def __init__(self, test_command, configuration=None, environment=None, dosbox_path='dosbox'):
+    def __init__(self, test_command, configuration=None, environment=None, dosbox_path='dosbox', timeout_error=TimeoutError):
         # TODO Try rewrite as contextmanager
         self.__captures_path = None
         self.__configuration = {section: items.copy() for section, items in configuration.items()} if configuration is not None else {}
@@ -27,6 +27,7 @@ class TestBox:
         self.__screenshot_ready = None
         self.__test_command = test_command
         self.__thread = None
+        self.__timeout_error = timeout_error
 
     def send_keys(self, keys):
         for key in keys:
@@ -52,7 +53,7 @@ class TestBox:
         with self.__timeout(timeout) as timeout:
             print('SCREENSHOT', file=self.__input_file, flush=True)
             if not self.__screenshot_ready.wait(timeout=timeout()):
-                raise TimeoutError()
+                raise self.__timeout_error()
             self.__screenshot_ready.clear()
             name, = (x for x in os.listdir(self.__captures_path) if os.path.splitext(x)[1] == '.png')
             path = os.path.join(self.__captures_path, name)
@@ -87,9 +88,8 @@ class TestBox:
     def pid(self):
         return self.__process.pid
 
-    @staticmethod
     @contextlib.contextmanager
-    def __timeout(timeout):
+    def __timeout(self, timeout):
         now = time.monotonic()
         def get():
             nonlocal now
@@ -98,6 +98,8 @@ class TestBox:
                 passed = time.monotonic() - now
                 now += passed
                 timeout -= passed
+                if timeout < 0:
+                    raise self.__timeout_error()
             return timeout
         yield get
         get()
