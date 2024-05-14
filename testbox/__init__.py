@@ -42,12 +42,18 @@ class TestBox:
             elif key == '◂':
                 code = 276
             elif key.isupper():
-                modifiers = 1
+                modifiers |= 1
                 self.__command('KEY DOWN 304 0')
+            elif '\x01' <= key <= '\x1a' and key != '\r':
+                modifiers |= 0x40
+                code += ord('a') - 1
+                self.__command('KEY DOWN 306 0')
             self.__command(f'KEY DOWN {code} {modifiers}')
             self.__command(f'KEY UP {code} {modifiers}')
-            if modifiers == 1:
+            if modifiers & 1:
                 self.__command('KEY UP 304 0')
+            if modifiers & 0x40:
+                self.__command('KEY UP 306 0')
 
     def get_screenshot(self, timeout=None):
         with self.__timeout(timeout) as timeout:
